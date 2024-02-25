@@ -1,0 +1,66 @@
+#!/bin/sh
+red='\033[0;31m'
+reset='\033[0m'
+
+NAME="application"
+EXEC_FILE=$1
+
+show_help() {
+  cat <<-EOF
+  Usage: $0 path/to/executable/file [OPTIONS]
+
+  options:
+    -h, --help      Display this help message
+    -i, --icon      app icon path
+    -n, --name      set name to application
+EOF
+}
+
+invalid_option() {
+    echo -e "${red}Invalid option: $ARG ${reset}"
+    show_help 
+}
+
+invalid_path_file() {
+  if ! [ -f "$1" ]; then 
+    echo "File not found, verify path is valid"
+    exit 1
+  fi
+}
+
+create_app_desktop() {
+  local NAME=$1
+  local EXEC_FILE=$2
+  local ICON=$3
+  
+  cat <<EOF > $NAME.desktop
+  [Desktop Entry]
+  Name=$NAME
+  Exec=$EXEC_FILE
+  Type=Application
+  Terminal=false
+  Icon=$ICON
+EOF
+}
+
+if [ -z "$EXEC_FILE" ]; then 
+  invalid_option
+  exit 1
+fi
+
+invalid_path_file $EXEC_FILE
+
+ARG=$3
+
+case $ARG in
+  -h | --help)
+    show_help
+    exit 0
+  ;;
+  -i | --icon)
+    ICON=$ARG
+    exit 0  
+  ;;
+esac
+
+create_app_desktop $NAME $1 $ICON
