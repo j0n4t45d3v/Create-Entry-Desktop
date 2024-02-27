@@ -4,6 +4,7 @@ reset='\033[0m'
 
 NAME="application"
 EXEC_FILE=$1
+# shift #exclui o primeiro arqumento
 
 show_help() {
   cat <<-EOF
@@ -17,7 +18,7 @@ EOF
 }
 
 invalid_option() {
-    echo -e "${red}Invalid option: $ARG ${reset}"
+    echo -e "${red}Invalid option: $1 ${reset}"
     show_help 
 }
 
@@ -49,18 +50,30 @@ if [ -z "$EXEC_FILE" ]; then
 fi
 
 invalid_path_file $EXEC_FILE
+shift
+while [ "$#" -gt 0 ]; do
+  case $1 in
+    -h | --help)
+      show_help
+      exit 0
+    ;;
+    -n | --name)
+      shift
+      invalid_path_file $1
+      NAME=$1
+    ;;
+    -i | --icon)
+      shift
+      invalid_path_file $1
+      ICON=$1  
+    ;;
+    *)
+      invalid_option $1
+      exit 1
+    ;;
+    esac  
+    shift
+  done
+create_app_desktop $NAME $EXEC_FILE $ICON
 
-ARG=$3
 
-case $ARG in
-  -h | --help)
-    show_help
-    exit 0
-  ;;
-  -i | --icon)
-    ICON=$ARG
-    exit 0  
-  ;;
-esac
-
-create_app_desktop $NAME $1 $ICON
